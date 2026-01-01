@@ -1,0 +1,51 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.app.fortress">
+
+    <!-- Required for VPN and Proxy detection -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Package visibility for security checks (Android 11+) -->
+    <queries>
+        <!-- Root detection apps -->
+        <package android:name="com.topjohnwu.magisk" />
+        <package android:name="eu.chainfire.supersu" />
+        <package android:name="com.noshufou.android.su" />
+        <package android:name="com.koushikdutta.superuser" />
+        <package android:name="me.phh.superuser" />
+        <package android:name="me.weishu.kernelsu" />
+        <package android:name="io.github.vvb2060.magisk" />
+
+        <!-- Hooking/Xposed detection -->
+        <package android:name="de.robv.android.xposed.installer" />
+        <package android:name="org.meowcat.edxposed.manager" />
+        <package android:name="org.lsposed.manager" />
+        <package android:name="com.saurik.substrate" />
+
+        <!-- Proxy apps -->
+        <package android:name="org.proxydroid" />
+        <package android:name="com.drony" />
+        <package android:name="com.evozi.injector" />
+        <package android:name="com.evozi.injector.lite" />
+        <package android:name="com.scheler.superproxy" />
+        <package android:name="proxy.browser.unblock.sites.proxybrowser.unblocksites" />
+        <package android:name="com.reqable.android" />
+        <package android:name="de.blinkt.openvpn" />
+        <package android:name="net.openvpn.openvpn" />
+
+        <!-- VPN apps -->
+        <package android:name="com.jrzheng.supervpnfree" />
+        <package android:name="com.free.vpn.super.hotspot.open" />
+        <package android:name="free.vpn.unblock.proxy.turbovpn" />
+        <package android:name="hotspotshield.android.vpn" />
+        <package android:name="com.cloudflare.onedotonedotonedotone" />
+        <package android:name="org.torproject.android" />
+
+        <!-- MITM tools -->
+        <package android:name="com.guoshi.httpcanary" />
+        <package android:name="app.greyshirts.sslcapture" />
+        <package android:name="com.emanuelef.remote_capture" />
+        <package android:name="tech.httptoolkit.android.v1" />
+    </queries>
+
+</manifest>

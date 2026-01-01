@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/src/main/cpp/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/yaser/Android/Sdk/cmake/3.22.1/bin/ninja",
+      "-C",
+      "/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/x86",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/yaser/Android/Sdk/cmake/3.22.1/bin/ninja",
+    "-C",
+    "/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/x86",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "app_fortress_native::@6890427a1f51a3e7e1df": {
+      "artifactName": "app_fortress_native",
+      "abi": "x86",
+      "output": "/home/yaser/Desktop/My Apps/seoking-ios/build/app_fortress/intermediates/cxx/Debug/6l6m543w/obj/x86/libapp_fortress_native.so",
+      "runtimeFiles": []
+    }
+  }
+}

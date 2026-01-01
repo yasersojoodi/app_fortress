@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/x86_64",
+  "command": "/home/yaser/Android/Sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target=x86_64-none-linux-android21 --sysroot=/home/yaser/Android/Sdk/ndk/26.1.10909125/toolchains/llvm/prebuilt/linux-x86_64/sysroot -Dapp_fortress_native_EXPORTS -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -Wall -Werror -fvisibility=hidden -fstack-protector-strong -fno-limit-debug-info  -fPIC -fvisibility=hidden -o CMakeFiles/app_fortress_native.dir/app_fortress_native.c.o -c /home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/src/main/cpp/app_fortress_native.c",
+  "file": "/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/src/main/cpp/app_fortress_native.c"
+}
+]

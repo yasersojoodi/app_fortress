@@ -1,0 +1,3 @@
+/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/armeabi-v7a/CMakeFiles/app_fortress_native.dir
+/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/yaser/.pub-cache/hosted/pub.dev/app_fortress-1.0.1/android/.cxx/Debug/6l6m543w/armeabi-v7a/CMakeFiles/rebuild_cache.dir
