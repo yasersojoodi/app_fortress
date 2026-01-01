@@ -15,7 +15,7 @@ jailbreak detection, anti-debugging, hooking detection, and more.
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform         = :ios, '13.0'
+  s.platform         = :ios, '14.0'
   s.swift_version    = '5.0'
 
   # Privacy manifest (required for App Store submission since Spring 2024)
