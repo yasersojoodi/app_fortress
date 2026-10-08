@@ -212,24 +212,32 @@ public class AppFortressPlugin: NSObject, FlutterPlugin {
     // MARK: - Device Security Info
     
     private func getDeviceSecurityInfo(result: @escaping FlutterResult) {
+        // every check runs once (they were evaluated twice before: for the
+        // threat list and again for the map)
+        let jailbroken = isJailbroken()
+        let simulator = isSimulator()
+        let debugger = isDebuggerAttached()
+        let hooking = isHookingDetected()
+        let proxy = isProxyEnabled()
+        let vpn = isVpnActive()
+
         var threats: [[String: Any]] = []
-        
-        if isJailbroken() {
+        if jailbroken {
             threats.append(["code": "JAILBREAK_DETECTED", "severity": "high", "message": "Device is jailbroken"])
         }
-        if isSimulator() {
+        if simulator {
             threats.append(["code": "SIMULATOR_DETECTED", "severity": "medium", "message": "Running on simulator"])
         }
-        if isDebuggerAttached() {
+        if debugger {
             threats.append(["code": "DEBUGGER_DETECTED", "severity": "critical", "message": "Debugger attached"])
         }
-        if isHookingDetected() {
+        if hooking {
             threats.append(["code": "HOOKING_DETECTED", "severity": "critical", "message": "Hooking framework detected"])
         }
-        if isProxyEnabled() {
+        if proxy {
             threats.append(["code": "PROXY_DETECTED", "severity": "high", "message": "HTTP proxy is configured"])
         }
-        if isVpnActive() {
+        if vpn {
             threats.append(["code": "VPN_DETECTED", "severity": "medium", "message": "VPN connection is active"])
         }
 
@@ -241,21 +249,21 @@ public class AppFortressPlugin: NSObject, FlutterPlugin {
             "appVersion": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
             "appVersionCode": (Bundle.main.infoDictionary?["CFBundleVersion"] as? String).flatMap { Int($0) },
             "packageName": Bundle.main.bundleIdentifier,
-            "isRooted": isJailbroken(),
-            "isEmulator": isSimulator(),
-            "isDebuggerAttached": isDebuggerAttached(),
-            "isHookingDetected": isHookingDetected(),
+            "isRooted": jailbroken,
+            "isEmulator": simulator,
+            "isDebuggerAttached": debugger,
+            "isHookingDetected": hooking,
             "isDebuggable": isDebugBuild(),
             "installSource": getInstallSource(),
-            "isProxyEnabled": isProxyEnabled(),
-            "isVpnActive": isVpnActive(),
+            "isProxyEnabled": proxy,
+            "isVpnActive": vpn,
             "threats": threats,
             "timestamp": Int(Date().timeIntervalSince1970 * 1000)
         ]
-        
+
         result(deviceInfo)
     }
-    
+
     // MARK: - Jailbreak Detection (fork حذف شد)
     
     func isJailbroken() -> Bool {
@@ -349,7 +357,13 @@ public class AppFortressPlugin: NSObject, FlutterPlugin {
     // MARK: - Hooking Detection
     
     func isHookingDetected() -> Bool {
-        return checkFrida() || checkSuspiciousLibraries()
+        return checkInsertedLibraries() || checkFrida() || checkSuspiciousLibraries()
+    }
+
+    /// Libraries injected at launch (tweak loaders, Frida gadget ...).
+    private func checkInsertedLibraries() -> Bool {
+        guard let value = getenv("DYLD_INSERT_LIBRARIES") else { return false }
+        return !String(cString: value).isEmpty
     }
     
     private func checkFrida() -> Bool {
@@ -415,13 +429,12 @@ public class AppFortressPlugin: NSObject, FlutterPlugin {
     }
     
     private func getInstallSource() -> String {
-        if Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt" {
+        guard let receipt = Bundle.main.appStoreReceiptURL else { return "sideloaded" }
+        if receipt.lastPathComponent == "sandboxReceipt" {
             return "testflight"
         }
-        if Bundle.main.appStoreReceiptURL != nil {
-            return "appstore"
-        }
-        return "sideloaded"
+        // the URL is always set; only App Store installs have the file
+        return FileManager.default.fileExists(atPath: receipt.path) ? "appstore" : "sideloaded"
     }
     
     private func runFullSecurityCheck(result: @escaping FlutterResult) {
@@ -455,82 +468,42 @@ public class AppFortressPlugin: NSObject, FlutterPlugin {
         ])
     }
 
-    // MARK: - Proxy Detection (اصلاح‌شده)
-    
+    // MARK: - Proxy Detection
+
+    /// An HTTP/HTTPS proxy (or a PAC file) set in the Wi-Fi settings, i.e. what
+    /// MITM tools such as Charles or Proxyman need.
+    ///
+    /// The old check also reported "proxy" when an app like Shadowrocket,
+    /// Surge or Stash was merely installed (most Iranian users have one) and
+    /// read proxy environment variables, which iOS apps never get.
     func isProxyEnabled() -> Bool {
-        return checkProxyAppsInstalled() || checkSystemProxy()
-    }
-
-    private func checkProxyAppsInstalled() -> Bool {
-        let proxySchemes = [
-            "charles://", "proxyman://", "httpcatcher://", "surge://",
-            "quantumult://", "shadowrocket://", "potatso://", "loon://",
-            "stash://", "thor://"
-        ]
-
-        for scheme in proxySchemes {
-            if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private func checkSystemProxy() -> Bool {
-        let proxyEnvVars = ["http_proxy", "https_proxy", "HTTP_PROXY", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"]
-        for envVar in proxyEnvVars {
-            if let value = getenv(envVar), String(cString: value).count > 0 {
-                return true
-            }
-        }
-        return false
-    }
-
-    // MARK: - VPN Detection (بدون تغییر)
-    
-    func isVpnActive() -> Bool {
-        return checkVpnInterface() || checkVpnProtocols()
-    }
-
-    private func checkVpnInterface() -> Bool {
-        var addrs: UnsafeMutablePointer<ifaddrs>?
-        guard getifaddrs(&addrs) == 0 else { return false }
-        defer { freeifaddrs(addrs) }
-
-        var cursor = addrs
-        while cursor != nil {
-            defer { cursor = cursor?.pointee.ifa_next }
-            guard let interface = cursor else { continue }
-
-            let name = String(cString: interface.pointee.ifa_name)
-            let flags = Int32(interface.pointee.ifa_flags)
-
-            let vpnInterfaces = ["utun", "ppp", "ipsec", "tap", "tun"]
-            for vpnInterface in vpnInterfaces {
-                if name.hasPrefix(vpnInterface) && (flags & IFF_UP) != 0 && (flags & IFF_RUNNING) != 0 {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
-    private func checkVpnProtocols() -> Bool {
-        guard let cfDict = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any] else {
+        guard let settings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any] else {
             return false
         }
-
-        if let scoped = cfDict["__SCOPED__"] as? [String: Any] {
-            for (key, _) in scoped {
-                let vpnPrefixes = ["utun", "ppp", "ipsec", "tap", "tun"]
-                for prefix in vpnPrefixes {
-                    if key.hasPrefix(prefix) {
-                        return true
-                    }
-                }
-            }
+        func flag(_ key: String) -> Bool {
+            return (settings[key] as? NSNumber)?.intValue == 1
         }
+        let host = (settings[kCFNetworkProxiesHTTPProxy as String] as? String) ?? ""
+        return (flag(kCFNetworkProxiesHTTPEnable as String) && !host.isEmpty)
+            || flag("HTTPSEnable")
+            || flag(kCFNetworkProxiesProxyAutoConfigEnable as String)
+    }
 
-        return false
+    // MARK: - VPN Detection
+
+    /// A VPN tunnel that carries traffic: iOS lists it under "__SCOPED__" of
+    /// the system proxy settings.
+    ///
+    /// The old check also enumerated the network interfaces, but iOS keeps
+    /// several "utun" interfaces up for its own services (iCloud Private
+    /// Relay, Wi-Fi calling, Apple Watch ...), so almost every iPhone looked
+    /// like it had a VPN on.
+    func isVpnActive() -> Bool {
+        guard let settings = CFNetworkCopySystemProxySettings()?.takeRetainedValue() as? [String: Any],
+              let scoped = settings["__SCOPED__"] as? [String: Any] else {
+            return false
+        }
+        let vpnPrefixes = ["utun", "ppp", "ipsec", "tap", "tun"]
+        return scoped.keys.contains { key in vpnPrefixes.contains { key.hasPrefix($0) } }
     }
 }

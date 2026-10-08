@@ -60,8 +60,9 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // a plugin is shrunk by the app's R8 using consumer-rules.pro;
+            // shrinking the library itself can break the JNI / plugin names
+            minifyEnabled false
         }
         debug {
             minifyEnabled false

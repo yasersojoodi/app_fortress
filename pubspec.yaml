@@ -22,10 +22,11 @@ dev_dependencies:
 
 flutter:
   plugin:
+    # seoking: iOS only (Android uses freeRASP). To enable Android again add:
+    #   android:
+    #     package: com.app.fortress
+    #     pluginClass: AppFortressPlugin
     platforms:
-      android:
-        package: com.app.fortress
-        pluginClass: AppFortressPlugin
       ios:
         pluginClass: AppFortressPlugin
 
